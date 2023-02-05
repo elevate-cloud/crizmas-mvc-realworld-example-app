@@ -14,10 +14,9 @@ RUN npm install
 COPY . .
 
 # Set the environment variables
-ENV PORT 3000
 
 # Expose the application port
-EXPOSE 3000
+EXPOSE 80
 
 # Run the application
 CMD [ "npm", "start" ]

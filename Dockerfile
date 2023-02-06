@@ -16,7 +16,7 @@ COPY . .
 # Set the environment variables
 
 # Expose the application port
-EXPOSE 3000
+EXPOSE 5556
 
 # Run the application
 CMD [ "npm", "start" ]

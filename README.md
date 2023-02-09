@@ -1,65 +1,89 @@
-# ![RealWorld Crizmas MVC](crizmas.png)
 
-> ### crizmas-mvc codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API.
+Deploying a Web Application to Azure App Service by benefiting from docker containerization using Azure DevOps Pipelines and benefiting from Terraspace as an IaC (infrastructure as code) for creating the Azure resources.   
 
+Prerequisites
 
-### [Demo](https://raulsebastianmihaila.github.io/crizmas-mvc-realworld-site/)&nbsp;&nbsp;&nbsp;&nbsp;[RealWorld](https://github.com/gothinkster/realworld)
+•	An Azure subscription
 
+•	A web application codebase
 
-This codebase was created to demonstrate a fully fledged fullstack application built with **[crizmas-mvc](https://github.com/raulsebastianmihaila/crizmas-mvc)** including CRUD operations, authentication, routing, pagination, and more.
+•	An Azure DevOps organization and project
 
+•	A Terraform installation
 
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
-
-
-# Getting started
-
-1. Clone repo
-2. `npm i`
-3. `npm start`
+•	A Terraspace installation
 
 
-By default the local server will run on port 5556, but it can be changed in `webpack.config.js`.
+
+- Creating of Azure Container Registry (ACR) with Terraspace.
+
+    Terraspace is a framework that simplifies the IaC process by abstracting Terraform code into reusable modules.
+
+    Go to ‘terraspace codes’ directory in your terminal and run the following command to create an ACR. 
+
+    terraspace up  acr
+    
+
+- Azure DevOps
+
+    After opening a project (CrizmasApp) in the organization, start creating a new pipeline. 
+    
+
+<img width="472" alt="image" src="https://user-images.githubusercontent.com/113396504/217716753-e08deef4-b3f1-4dc7-9078-1586a218cc26.png">
 
 
-### Making requests to the backend API
+ 
+	
+- Select the repository where your application files are.
 
-For convenience, we're using the API server running at https://conduit.productionready.io/api. You can view [the API spec here](https://github.com/GoThinkster/productionready/blob/master/api) which contains all routes & responses for the server.
-
-The source code for the backend server (available for Node, Rails and Django) can be found in the [main RealWorld repo](https://github.com/gothinkster/realworld).
-
-If you want to change the API URL to a local server, simply edit `src/js/http.js`.
+<img width="459" alt="image" src="https://user-images.githubusercontent.com/113396504/217716841-fb16b3aa-8df1-4677-8cd6-23de7f86c5f8.png">
 
 
-## Functionality overview
 
-The example application is a social blogging site (i.e. a Medium.com clone) called "Conduit". It uses a custom API for all requests, including authentication. You can view a live demo [here](https://raulsebastianmihaila.github.io/crizmas-mvc-realworld-site/).
+- Select the ACR to push the docker image to configure the pipeline. 
 
-**General functionality:**
+<img width="468" alt="image" src="https://user-images.githubusercontent.com/113396504/217716860-f2ce30a4-543c-4cd5-aada-0a202d1ec3bb.png">
 
-- Authenticate users via JWT (login/signup pages + logout button on settings page)
-- CRU* users (sign up & settings page - no deleting required)
-- CRUD Articles
-- CR*D Comments on articles (no updating required)
-- GET and display paginated lists of articles
-- Favorite articles
-- Follow other users
 
-**The general page breakdown looks like this:**
 
-- Home page (URL: / )
-    - List of tags
-    - List of articles pulled from either Feed, Global, or by Tag
-    - Pagination for list of articles
-- Sign in/Sign up pages (URL: /login, /register )
-    - Use JWT (store the token in localStorage)
-- Settings page (URL: /settings )
-- Editor page to create/edit articles (URL: /editor, /editor/article-slug-here )
-- Article page (URL: /article/article-slug-here )
-    - Delete article button (only shown to article's author)
-    - Render markdown from server client side
-    - Comments section at bottom of page
-    - Delete comment button (only shown to comment's author)
-- Profile page (URL: /@username, /@username/favorites )
-    - Show basic user info
-    - List of articles populated from author's created articles or author's favorited articles
+- The pipeline yaml file will be committed to the repository and then the docker image will be sent to the ACR.
+
+<img width="468" alt="image" src="https://user-images.githubusercontent.com/113396504/217716901-3f3dbd03-dabb-419b-a002-e7ba6cbf6f40.png">
+
+ 
+- You will see the image in the repository of the ACR resource.
+
+<img width="468" alt="image" src="https://user-images.githubusercontent.com/113396504/217716929-79b832ba-ab24-4894-8361-fd64a013a215.png">
+
+
+- Create a webapp resource in the Azure. 
+
+     First, include the ACR credentials and docker image name in the tfvars file of crizmas_linux_webapp stack. Then run the             following command while you are in the ‘terraspace codes’ directory in your terminal. 
+
+    terraspace up crizmas_linux_webapp 
+
+
+- After creating the webapp resource, start creating a release to deploy the application to the webapp using the docker image that was created and stored in the ACR. Click on the lightning and enable continuous deployment trigger. 
+
+<img width="468" alt="image" src="https://user-images.githubusercontent.com/113396504/217717011-ddbcf342-3e4b-436d-9639-f59388ab1514.png">
+
+<img width="468" alt="image" src="https://user-images.githubusercontent.com/113396504/217717025-966b80e8-5caf-4b18-9ac6-524db3c3b674.png">
+
+<img width="468" alt="image" src="https://user-images.githubusercontent.com/113396504/217717066-5817b9a5-1eca-49a7-8bf0-6d149e33fb04.png">
+ 
+
+- The release is manually triggered.
+ 
+<img width="468" alt="image" src="https://user-images.githubusercontent.com/113396504/217717083-aae9d079-a4f1-4e73-b398-3491cc204976.png">
+
+- Since port 5556 is used to publish the application, you need to add WEBSITES_PORT variable as an application setting in the configuration section of the webapp in azure portal. 
+
+<img width="468" alt="image" src="https://user-images.githubusercontent.com/113396504/217717121-0be91ac5-e723-4f81-b4d6-79089c395477.png">
+
+
+- After the deployment is arrived in the webapp, click on the url of your app in the overview section of the webapp to go to your app. 
+
+
+<img width="468" alt="image" src="https://user-images.githubusercontent.com/113396504/217717133-71e3de4b-60fd-47fd-8fb3-18931c7802e5.png">
+
+ 
